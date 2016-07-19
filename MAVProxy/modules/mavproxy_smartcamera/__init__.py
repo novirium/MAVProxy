@@ -38,6 +38,7 @@ from MAVProxy.modules.lib.mp_settings import MPSetting
 # Own Headers
 from sc_webcam import SmartCameraWebCam
 from sc_SonyQX1 import SmartCamera_SonyQX
+from sc_PiCam import SmartCamera_PiCam
 import sc_config
 
 #****************************************************************************
@@ -150,6 +151,11 @@ class SmartCameraModule(mp_module.MPModule):
             # Sony QX1
             if camera_type == 2:
                 self.__vRegisterQXCamera(i)
+
+            # PiCam
+            if camera_type == 3:
+                new_camera = SmartCameraPiCam(i)
+                self.camera_list = self.camera_list + [new_camera]
 
         # display number of cameras found
         print ("cameras found: %d" % len(self.camera_list))
