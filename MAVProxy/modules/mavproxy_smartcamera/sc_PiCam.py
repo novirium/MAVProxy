@@ -16,7 +16,7 @@ import sc_config
 from picamera import PiCamera
 import os
 
-class SmartCameraWebCam:
+class SmartCamerPiCam:
 
     def __init__(self, instance):
 

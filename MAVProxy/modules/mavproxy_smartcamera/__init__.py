@@ -38,7 +38,7 @@ from MAVProxy.modules.lib.mp_settings import MPSetting
 # Own Headers
 from sc_webcam import SmartCameraWebCam
 from sc_SonyQX1 import SmartCamera_SonyQX
-from sc_PiCam import SmartCamera_PiCam
+from sc_PiCam import SmartCameraPiCam
 import sc_config
 
 #****************************************************************************
