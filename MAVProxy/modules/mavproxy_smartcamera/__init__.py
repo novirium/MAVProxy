@@ -36,7 +36,11 @@ from MAVProxy.modules.lib.mp_settings import MPSetting
 
 
 # Own Headers
-from sc_webcam import SmartCameraWebCam
+try:
+    from sc_webcam import SmartCameraWebCam
+    webcamImported=True
+except ImportError:
+    webcamImported=False
 from sc_SonyQX1 import SmartCamera_SonyQX
 from sc_PiCam import SmartCameraPiCam
 import sc_config
@@ -145,8 +149,12 @@ class SmartCameraModule(mp_module.MPModule):
             camera_type = sc_config.config.get_integer(config_group, 'type', 0)
             # webcam
             if camera_type == 1:
-                new_camera = SmartCameraWebCam(i)
-                self.camera_list = self.camera_list + [new_camera]
+                if webcamImported:
+                    new_camera = SmartCameraWebCam(i)
+                    self.camera_list = self.camera_list + [new_camera]
+                else:
+                    # Could not import module on start, so try again to throw proper exception
+                    __import__(sc_webcam)
 
             # Sony QX1
             if camera_type == 2:
