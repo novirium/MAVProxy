@@ -32,6 +32,8 @@ class SmartCameraPiCam:
 		self.img_width = sc_config.config.get_integer(self.config_group,'width',640)
 		self.img_height = sc_config.config.get_integer(self.config_group,'height',480)
 		self.img_output_folder = os.path.expanduser(sc_config.config.get_string(self.config_group, 'image_output_folder', "~/smartcamcaptures/"))
+		self.camISO = sc_config.config.get_integer(self.config_group,'iso',0)
+		self.camShutterSpeed = sc_config.config.get_integer(self.config_group,'shutter_speed',0)
 
 		self.vehicleLat = 0.0			  # Current Vehicle Latitude
 		self.vehicleLon = 0.0			  # Current Vehicle Longitude
@@ -61,6 +63,8 @@ class SmartCameraPiCam:
 		self.camera = PiCamera()
 
 		self.camera.resolution= (self.img_width,self.img_height)
+		self.camera.iso = self.camISO
+		self.camera.shutter_speed = self.camShutterSpeed
 
 		# check we can connect to camera
 		#if not self.camera.isOpened():
@@ -77,6 +81,21 @@ class SmartCameraPiCam:
 	def boSet_Attitude(self, mAttitudeMessage):
 		if mAttitudeMessage.get_type() == 'ATTITUDE':
 			(self.vehicleRoll, self.vehiclePitch) = (math.degrees(mAttitudeMessage.roll), math.degrees(mAttitudeMessage.pitch))
+
+	def boSetISO(self, u16ISO):
+		if u16ISO == 1:
+			#Set to auto (mavlink specifies that 0 value is ignored)
+			self.camera.iso=0
+		else :
+			self.camera.iso=u16ISO
+
+	def boSetShutterSpeed(self,u16ShutterSpeed):
+		if u16ShutterSpeed == 1:
+			#Set to auto (mavlink specifies that 0 value is ignored)
+			self.camera.shutter_speed=0
+		else:
+			#PiCam expects shutter speed in microseconds
+			self.camera.shutter_speed=int(1000000/u16ShutterSpeed)
 
 	# latest_image - returns ppath to latest image captured
 	def get_latest_image(self):
