@@ -1,8 +1,15 @@
 [camera0]
-# for no camera set type = 0, for webcam set type = 1
-type = 2
+# for no camera set type = 0, for webcam set type = 1, QX1 = 2, PiCam = 3
+type = 3
 #width = 640
 #height = 480
+
+#Set ISO to 0 (default) for auto
+#iso = 0
+
+#Shutter speed in microseconds. Set shutter speed to 0 (default) for auto
+#shutter_speed = 0
+
 #horizontal-fov = 70.42
 #vertical-fov = 43.3
 #video_output_file = ~/smartcamera-%%Y-%%m-%%d-%%H-%%M.avi
