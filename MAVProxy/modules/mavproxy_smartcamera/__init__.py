@@ -35,14 +35,7 @@ from MAVProxy.modules.lib import mp_module
 from MAVProxy.modules.lib.mp_settings import MPSetting
 
 
-# Own Headers
-try:
-    from sc_webcam import SmartCameraWebCam
-    webcamImported=True
-except ImportError:
-    webcamImported=False
-from sc_SonyQX1 import SmartCamera_SonyQX
-from sc_PiCam import SmartCameraPiCam
+
 import sc_config
 
 #****************************************************************************
@@ -111,6 +104,7 @@ class SmartCameraModule(mp_module.MPModule):
  #****************************************************************************
 
     def __vRegisterQXCamera(self,u8CamNumber):
+        from sc_SonyQX1 import SmartCamera_SonyQX
         if (self.u8RetryTimeout < self.u8MaxRetries):
             new_camera = SmartCamera_SonyQX(u8CamNumber, self.WirelessPort)
             if new_camera.boValidCameraFound() is True:
@@ -149,12 +143,9 @@ class SmartCameraModule(mp_module.MPModule):
             camera_type = sc_config.config.get_integer(config_group, 'type', 0)
             # webcam
             if camera_type == 1:
-                if webcamImported:
-                    new_camera = SmartCameraWebCam(i)
-                    self.camera_list = self.camera_list + [new_camera]
-                else:
-                    # Could not import module on start, so try again to throw proper exception
-                    __import__(sc_webcam)
+                from sc_webcam import SmartCameraWebCam
+                new_camera = SmartCameraWebCam(i)
+                self.camera_list = self.camera_list + [new_camera]
 
             # Sony QX1
             if camera_type == 2:
@@ -162,6 +153,7 @@ class SmartCameraModule(mp_module.MPModule):
 
             # PiCam
             if camera_type == 3:
+                from sc_PiCam import SmartCameraPiCam
                 new_camera = SmartCameraPiCam(i)
                 self.camera_list = self.camera_list + [new_camera]
 
