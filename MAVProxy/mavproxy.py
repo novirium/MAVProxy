@@ -13,6 +13,8 @@ import serial, Queue, select
 import traceback
 import select
 import shlex
+import ctypes
+import platform
 
 from MAVProxy.modules.lib import textconsole
 from MAVProxy.modules.lib import rline
@@ -629,6 +631,17 @@ def log_paths():
             os.path.join(logdir, logname),
             os.path.join(logdir, logname + '.raw'))
 
+#statvfs doesn't work on windows - from http://stackoverflow.com/a/2372171
+def get_free_space_mb(dirname):
+    """Return folder/drive free space (in megabytes)."""
+    if platform.system() == 'Windows':
+        free_bytes = ctypes.c_ulonglong(0)
+        ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p(os.path.dirname(os.path.abspath(dirname))), None, None, ctypes.pointer(free_bytes))
+        return free_bytes.value / 1024 / 1024
+    else:
+        st = os.statvfs(dirname)
+        return st.f_bavail * st.f_frsize / 1024 / 1024
+
 
 def open_telemetry_logs(logpath_telem, logpath_telem_raw):
     '''open log files'''
@@ -644,9 +657,8 @@ def open_telemetry_logs(logpath_telem, logpath_telem_raw):
         print("Telemetry log: %s" % logpath_telem)
 
         #make sure there's enough free disk space for the logfile (>200Mb)
-        stat = os.statvfs(logpath_telem)
-        if stat.f_bfree*stat.f_bsize < 209715200:
-            print("ERROR: Not enough free disk space for logfile")
+        if get_free_space_mb(logpath_telem) < 200:
+            print("ERROR: Not enough free disk space for logfile (%d) in %s" % (get_free_space_mb(logpath_telem),os.path.dirname(os.path.abspath(logpath_telem))))
             mpstate.status.exit = True
             return
 
