@@ -31,7 +31,7 @@ class SmartCameraPiCam:
 		# get settings
 		self.img_width = sc_config.config.get_integer(self.config_group,'width',640)
 		self.img_height = sc_config.config.get_integer(self.config_group,'height',480)
-		self.img_output_folder = os.path.expanduser(sc_config.config.get_string(self.config_group, 'image_output_folder', "~/smartcamcaptures/"))
+		self.img_output_folder = os.path.expanduser(sc_config.config.get_string(self.config_group, 'image_output_folder', time.strftime("~/smartcamcaptures/%y%m%d_%H%M%S/")))
 		self.camISO = sc_config.config.get_integer(self.config_group,'iso',0)
 		self.camShutterSpeed = sc_config.config.get_integer(self.config_group,'shutter_speed',0)
 		self.attitideFilename = sc_config.config.get_boolean(self.config_group,'attitude_in_filename',False)
@@ -52,9 +52,8 @@ class SmartCameraPiCam:
 		# Check for output path
 		if not os.path.isdir(self.img_output_folder):
 			print "Configured output folder %s does not exist" % (self.img_output_folder)
-			if (self.img_output_folder == os.path.expanduser("~/smartcamcaptures/")):
-				print "Creating output folder %s" % (self.img_output_folder)
-				os.mkdir(self.img_output_folder)
+			print "Creating output folder %s" % (self.img_output_folder)
+			os.makedirs(self.img_output_folder)
 
 		# background image processing variables
 		self.img_counter = 0		# num images requested so far
@@ -110,7 +109,7 @@ class SmartCameraPiCam:
 		if (self.attitideFilename):
 			return os.path.join(self.img_output_folder, "img%d-%d_%d_%d.jpg" % (self.instance,img_number,int(100*self.vehicleRoll),int(100*self.vehiclePitch)))
 		else:
-			return os.path.join(self.img_output_folder, "img%d-%d.jpg" % (self.instance,img_number)
+			return os.path.join(self.img_output_folder, "img%d-%d.jpg" % (self.instance,img_number))
 
 	# get_image_counter - returns number of images captured since startup
 	def get_image_counter(self):
