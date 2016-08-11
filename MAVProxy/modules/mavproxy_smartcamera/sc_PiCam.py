@@ -34,6 +34,7 @@ class SmartCameraPiCam:
 		self.img_output_folder = os.path.expanduser(sc_config.config.get_string(self.config_group, 'image_output_folder', "~/smartcamcaptures/"))
 		self.camISO = sc_config.config.get_integer(self.config_group,'iso',0)
 		self.camShutterSpeed = sc_config.config.get_integer(self.config_group,'shutter_speed',0)
+		self.attitideFilename = sc_config.config.get_boolean(self.config_group,'attitude_in_filename',False)
 
 		self.vehicleLat = 0.0			  # Current Vehicle Latitude
 		self.vehicleLon = 0.0			  # Current Vehicle Longitude
@@ -106,7 +107,10 @@ class SmartCameraPiCam:
 	# gen_file_path - returns file path given image number
 	def gen_file_path(self, img_number):
 		#return os.path.join(self.img_output_folder, "img%d-%d.jpg" % (self.instance,img_number))
-		return os.path.join(self.img_output_folder, "img%d-%d_%d_%d.jpg" % (self.instance,img_number,int(100*self.vehicleRoll),int(100*self.vehiclePitch)))
+		if (self.attitideFilename):
+			return os.path.join(self.img_output_folder, "img%d-%d_%d_%d.jpg" % (self.instance,img_number,int(100*self.vehicleRoll),int(100*self.vehiclePitch)))
+		else:
+			return os.path.join(self.img_output_folder, "img%d-%d.jpg" % (self.instance,img_number)
 
 	# get_image_counter - returns number of images captured since startup
 	def get_image_counter(self):

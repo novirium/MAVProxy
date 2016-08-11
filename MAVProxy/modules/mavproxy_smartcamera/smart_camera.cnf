@@ -3,6 +3,9 @@
 type = 3
 #width = 640
 #height = 480
+#attitude_in_filename = False
+
+
 
 #Set ISO to 0 (default) for auto
 #iso = 0
@@ -16,4 +19,5 @@ type = 3
 
 [general]
 WirelessPort = wlan0
+#SendCamFeedback = True
 #debug = True
