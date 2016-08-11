@@ -84,9 +84,12 @@ class SmartCameraModule(mp_module.MPModule):
         self.IntelligentAuto = 5
         self.SuperiorAuto = 6
         self.WirelessPort = sc_config.config.get_string("general", 'WirelessPort', "wlan0")
+        self.SendCamFeedback = sc_config.config.get_boolean("general",'SendCamFeedback',True)
         self.u8RetryTimeout = 0
         self.u8MaxRetries = 5
         self.__vRegisterCameras()
+
+
 
  #****************************************************************************
  #   Method Name     : __vRegisterQXCamera
@@ -177,8 +180,52 @@ class SmartCameraModule(mp_module.MPModule):
         '''Trigger Camera'''
         #print(self.camera_list)
         for cam in self.camera_list:
-            cam.take_picture()
-            print("Trigger Cam %s" % cam)
+            if cam.take_picture():
+                print("Trigger Cam %s" % cam)
+                if self.SendCamFeedback:
+
+
+
+                    #/usr/local/lib/python2.7/dist-packages/pymavlink/dialects/v10/ardupilotmega.py
+
+
+                    position_msg=self.status.msgs['GLOBAL_POSITION_INT']
+                    attitude_msg=self.status.msgs['ATTITUDE']
+
+                    if (position_msg!=None) and (attitude_msg!=None):
+
+                        roll=0
+                        pitch=0
+                        lat=0
+                        lon=0
+                        yaw=0
+                        altAMSL=0
+                        altrel=0
+                        (roll, pitch) = (math.degrees(attitude_msg.roll), math.degrees(attitude_msg.pitch))
+                        (lat, lon, yaw, altAMSL, altrel) = (position_msg.lat, position_msg.lon, position_msg.hdg*0.01, position_msg.alt*0.001, position_msg.relative_alt*0.001)
+                        for m in self.mpstate.mav_outputs:
+                        #self.master.mav.camera_feedback_send(
+                            m.mav.camera_feedback_send(
+            					time.time()*1000000.0, #system time in microseconds since UNIX epoch
+            					0,#self.settings.target_system, #target system ID
+            					cam.instance,#Camera ID
+            					cam.get_image_counter(),#Image index
+            					lat,#Latitude in (deg * 1E7)
+            					lon,#Longitude in (deg * 1E7)
+                                altAMSL,#altMSL
+            					altrel,#Altitude Relative (meters above HOME location)
+            					roll,#Camera Roll angle (earth frame, degrees, +-180)
+            					pitch,#Camera Pitch angle (earth frame, degrees, +-180)
+            					yaw,#Camera Yaw (earth frame, degrees, 0-360, true)
+            					5,#Focal Length (mm)
+            					0,#See CAMERA_FEEDBACK_FLAGS enum for definition of the bitmask
+            		            ) # param7
+                        print("Sent feedback")
+                    else:
+                        self.console.writeln("No position or attitude messages found for feedback")
+            else:
+                print("Failed to trigger Cam %s" % cam)
+
 
 #****************************************************************************
 #   Method Name     : __vCmdConnectCameras
