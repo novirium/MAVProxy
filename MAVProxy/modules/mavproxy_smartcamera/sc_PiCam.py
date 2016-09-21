@@ -136,15 +136,17 @@ class SmartCameraPiCam:
 		alat = math.fabs(self.vehicleLat)
 		dlat = int(alat)
 		mlat = int(60 * (alat - dlat))
-		slat = int(6000 * (60 * (alat - dlat) - mlat))
-		self.camera.exif_tags['GPS.GPSLatitude'] = '%d/1,%d/1,%d/100' % (dlat, mlat, slat)
+		slat = int(60000 * (60 * (alat - dlat) - mlat))
+		self.camera.exif_tags['GPS.GPSLatitude'] = '%d/1,%d/1,%d/1000' % (dlat, mlat, slat)
 
 		self.camera.exif_tags['GPS.GPSLongitudeRef'] = 'E' if self.vehicleLon > 0 else 'W'
 		alon = math.fabs(self.vehicleLon)
 		dlon = int(alon)
 		mlon = int(60 * (alon - dlon))
-		slon = int(6000 * (60 * (alon - dlon) - mlon))
-		self.camera.exif_tags['GPS.GPSLongitude'] = '%d/1,%d/1,%d/100' % (dlon, mlon, slon)
+		slon = int(60000 * (60 * (alon - dlon) - mlon))
+		self.camera.exif_tags['GPS.GPSLongitude'] = '%d/1,%d/1,%d/1000' % (dlon, mlon, slon)
+
+		self.camera.exif_tags['GPS.GPSImgDirection'] = '%d/100' % int(100 * self.vehicleHdg)
 
 		#Generate new image path
 		imagepath=self.gen_file_path(self.img_counter+1)
