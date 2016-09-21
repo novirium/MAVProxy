@@ -41,7 +41,6 @@ class MapModule(mp_module.MPModule):
         self.ElevationMap = mp_elevation.ElevationModel()
         self.last_unload_check_time = time.time()
         self.unload_check_interval = 0.1 # seconds
-        self.showLandingZone = 0
         self.map_settings = mp_settings.MPSettings(
             [ ('showgpspos', int, 0),
               ('showgps2pos', int, 1),
@@ -70,27 +69,12 @@ class MapModule(mp_module.MPModule):
         self.add_menu(MPMenuItem('Set Home', 'Set Home', '# map sethome '))
         self.add_menu(MPMenuItem('Terrain Check', 'Terrain Check', '# terrain check'))
         self.add_menu(MPMenuItem('Show Position', 'Show Position', 'showPosition'))
-        self.add_menu(MPMenuCheckbox('Show Landing Zone', 'Show Landing Zone', 'showLandingZone'))
 
     def add_menu(self, menu):
         '''add to the default popup menu'''
         from MAVProxy.modules.mavproxy_map import mp_slipmap
         self.default_popup.add(menu)
         self.mpstate.map.add_object(mp_slipmap.SlipDefaultPopup(self.default_popup, combine=True))
-
-    def show_LandingZone(self):
-        '''show/hide the UAV Challenge landing zone around the clicked point'''
-        from MAVProxy.modules.mavproxy_map import mp_slipmap
-        pos = self.click_position
-        'Create a new layer of two circles - at 30m and 80m radius around the above point'
-        if(self.mpstate.showLandingZone):
-            self.mpstate.map.add_object(mp_slipmap.SlipClearLayer('LandingZone'))
-            self.mpstate.map.add_object(mp_slipmap.SlipCircle('LandingZoneInner', layer='LandingZone', latlon=pos, radius=30, linewidth=2, color=(0,0,255)))
-            self.mpstate.map.add_object(mp_slipmap.SlipCircle('LandingZoneOuter', layer='LandingZone', latlon=pos, radius=80, linewidth=2, color=(0,0,255)))
-        else:
-            self.mpstate.map.remove_object('LandingZoneInner')
-            self.mpstate.map.remove_object('LandingZoneOuter')
-            self.mpstate.map.remove_object('LandingZone')
 
 
     def show_position(self):
@@ -282,9 +266,6 @@ class MapModule(mp_module.MPModule):
             self.move_fencepoint(obj.selected[0].objkey, obj.selected[0].extra_info)
         elif menuitem.returnkey == 'showPosition':
             self.show_position()
-        elif menuitem.returnkey == 'showLandingZone':
-            self.mpstate.showLandingZone = menuitem.IsChecked()
-            self.show_LandingZone()
 
 
     def map_callback(self, obj):
@@ -412,6 +393,16 @@ class MapModule(mp_module.MPModule):
             lon, # lon
             alt) # param7
 
+    def set_secondary_vehicle_position(self, m):
+        '''show 2nd vehicle on map'''
+        if m.get_type() != 'GLOBAL_POSITION_INT':
+            return
+        (lat, lon, heading) = (m.lat*1.0e-7, m.lon*1.0e-7, m.hdg*0.01)
+        if abs(lat) < 1.0e-3 and abs(lon) > 1.0e-3:
+            return
+        # hack for OBC2016
+        self.create_vehicle_icon('VehiclePos2', 'blue', follow=False, vehicle_type='heli')
+        self.mpstate.map.set_position('VehiclePos2', (lat, lon), rotation=heading)
 
     def mavlink_packet(self, m):
         '''handle an incoming mavlink packet'''

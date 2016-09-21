@@ -228,6 +228,24 @@ class LinkModule(mp_module.MPModule):
         else:
             master.link_delayed = False
 
+    def colors_for_severity(self, severity):
+        severity_colors = {
+            # tuple is (fg, bg) (as in "white on red")
+            mavutil.mavlink.MAV_SEVERITY_EMERGENCY: ('white', 'red'),
+            mavutil.mavlink.MAV_SEVERITY_ALERT: ('white', 'red'),
+            mavutil.mavlink.MAV_SEVERITY_CRITICAL: ('white', 'red'),
+            mavutil.mavlink.MAV_SEVERITY_ERROR: ('black', 'orange'),
+            mavutil.mavlink.MAV_SEVERITY_WARNING: ('black', 'orange'),
+            mavutil.mavlink.MAV_SEVERITY_NOTICE: ('black', 'yellow'),
+            mavutil.mavlink.MAV_SEVERITY_INFO: ('white', 'green'),
+            mavutil.mavlink.MAV_SEVERITY_DEBUG: ('white', 'green'),
+        }
+        try:
+            return severity_colors[severity]
+        except Exception as e:
+            print("Exception: %s" % str(e))
+            return ('white', 'red')
+
     def report_altitude(self, altitude):
         '''possibly report a new altitude'''
         master = self.master
@@ -254,6 +272,8 @@ class LinkModule(mp_module.MPModule):
         sysid = m.get_srcSystem()
         if sysid in self.mpstate.sysid_outputs:
             self.mpstate.sysid_outputs[sysid].write(m.get_msgbuf())
+            if m.get_type() == "GLOBAL_POSITION_INT" and self.module('map') is not None:
+                self.module('map').set_secondary_vehicle_position(m)
             return
 
         if getattr(m, '_timestamp', None) is None:
@@ -322,7 +342,7 @@ class LinkModule(mp_module.MPModule):
             if master.flightmode != self.status.flightmode:
                 self.status.flightmode = master.flightmode
                 if self.mpstate.functions.input_handler is None:
-                    self.mpstate.rl.set_prompt(self.status.flightmode + "> ")
+                    self.set_prompt(self.status.flightmode + "> ")
 
             if master.flightmode != self.status.last_mode_announced and time.time() > self.status.last_mode_announce + 2:
                     self.status.last_mode_announce = time.time()
@@ -351,7 +371,8 @@ class LinkModule(mp_module.MPModule):
 
         elif mtype == 'STATUSTEXT':
             if m.text != self.status.last_apm_msg or time.time() > self.status.last_apm_msg_time+2:
-                self.mpstate.console.writeln("APM: %s" % m.text, bg='red')
+                (fg, bg) = self.colors_for_severity(m.severity)
+                self.mpstate.console.writeln("APM: %s" % m.text, bg=bg, fg=fg)
                 self.status.last_apm_msg = m.text
                 self.status.last_apm_msg_time = time.time()
 
