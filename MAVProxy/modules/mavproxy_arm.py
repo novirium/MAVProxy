@@ -28,6 +28,7 @@ class ArmModule(mp_module.MPModule):
                                       'safetyon',
                                       'safetyoff'])
         self.add_command('disarm', self.cmd_disarm,   'disarm motors')
+        self.add_command('getswstate', self.cmd_swstate,   'get safety switch state (motors available)')
         self.was_armed = False
 
     def cmd_arm(self, args):
@@ -119,6 +120,12 @@ class ArmModule(mp_module.MPModule):
             0, # param5
             0, # param6
             0) # param7
+
+    def cmd_swstate(self, args):
+        if (self.mpstate.status.msgs['SYS_STATUS'].onboard_control_sensors_enabled & mavutil.mavlink.MAV_SYS_STATUS_SENSOR_MOTOR_OUTPUTS):
+            print("Safety switch is activated (motors available)")
+        else:
+            print("Safety switch is deactivated (motors not available)")
 
     def all_checks_enabled(self):
         ''' returns true if the UAV is skipping any arming checks'''
