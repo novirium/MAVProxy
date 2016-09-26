@@ -32,6 +32,9 @@ class SmartCameraPiCam:
 		self.img_width = sc_config.config.get_integer(self.config_group,'width',640)
 		self.img_height = sc_config.config.get_integer(self.config_group,'height',480)
 		self.img_output_folder = os.path.expanduser(sc_config.config.get_string(self.config_group, 'image_output_folder', time.strftime("~/smartcamcaptures/%y%m%d_%H%M%S/")))
+		self.makesymlink = sc_config.config.get_boolean(self.config_group,"make_symlink", True)
+
+
 		self.camISO = sc_config.config.get_integer(self.config_group,'iso',0)
 		self.camShutterSpeed = sc_config.config.get_integer(self.config_group,'shutter_speed',0)
 		self.attitideFilename = sc_config.config.get_boolean(self.config_group,'attitude_in_filename',False)
@@ -54,6 +57,11 @@ class SmartCameraPiCam:
 			print "Configured output folder %s does not exist" % (self.img_output_folder)
 			print "Creating output folder %s" % (self.img_output_folder)
 			os.makedirs(self.img_output_folder)
+
+		if self.makesymlink:
+			self.linkname=os.path.join(os.path.dirname(self.img_output_folder),"/latest"
+			os.symlink(self.img_output_folder,self.linkname
+			print "Linked %s to %s" % (self.linkname,self.img_output_folder)
 
 		# background image processing variables
 		self.img_counter = 0		# num images requested so far
