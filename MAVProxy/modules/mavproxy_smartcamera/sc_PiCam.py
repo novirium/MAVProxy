@@ -59,8 +59,8 @@ class SmartCameraPiCam:
 			os.makedirs(self.img_output_folder)
 
 		if self.makesymlink:
-			self.linkname=os.path.join(os.path.dirname(self.img_output_folder),"/latest"
-			os.symlink(self.img_output_folder,self.linkname
+			self.linkname=os.path.join(os.path.dirname(self.img_output_folder),"/latest")
+			os.symlink(self.img_output_folder,self.linkname)
 			print "Linked %s to %s" % (self.linkname,self.img_output_folder)
 
 		# background image processing variables
